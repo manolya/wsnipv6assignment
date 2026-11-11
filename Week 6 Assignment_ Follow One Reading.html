@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 6 Assignment: Follow One Reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Lab handout: cool paper, signal-blue accent, amber for "predict first" moments.
+     Layout: sticky step index on the left, one reading column, wide figures and code may scroll. */
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #14212c;
+  --muted: #586a79;
+  --rule: #d2dae1;
+  --accent: #0a6a8c;
+  --accent-soft: #e2f0f6;
+  --warm: #a95a12;
+  --warm-soft: #fbefe2;
+  --code-bg: #0f1a24;
+  --code-ink: #d8e3ec;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d141b; --surface: #141f29; --ink: #e2eaf1; --muted: #93a5b4; --rule: #283746;
+    --accent: #56b8de; --accent-soft: #15303d; --warm: #e8a160; --warm-soft: #33251a;
+    --code-bg: #0a1118; --code-ink: #d8e3ec; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d141b; --surface: #141f29; --ink: #e2eaf1; --muted: #93a5b4; --rule: #283746;
+  --accent: #56b8de; --accent-soft: #15303d; --warm: #e8a160; --warm-soft: #33251a;
+  --code-bg: #0a1118; --code-ink: #d8e3ec; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--font-body); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.shell { display: grid; grid-template-columns: 1fr; max-width: 1180px; margin: 0 auto; padding: 0 20px; gap: 40px; }
+@media (min-width: 1080px) { .shell { grid-template-columns: 220px minmax(0, 1fr); } }
+
+nav.toc { display: none; }
+@media (min-width: 1080px) {
+  nav.toc { display: block; position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; padding: 32px 0; font-size: 13.5px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  nav.toc a { display: block; padding: 3px 8px; border-left: 2px solid var(--rule); color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--accent); }
+  nav.toc .grp { margin-top: 14px; font: 600 11px/1 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-left: 10px; }
+}
+
+main { min-width: 0; padding: 32px 0 80px; }
+.col { max-width: 760px; }
+
+header.top { border-bottom: 1px solid var(--rule); padding-bottom: 24px; margin-bottom: 32px; }
+.eyebrow { font: 600 12.5px/1.3 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; }
+h1 { font-size: clamp(30px, 4.6vw, 42px); margin: 8px 0 10px; font-weight: 700; }
+h2 { font-size: 26px; margin: 56px 0 12px; padding-top: 12px; border-top: 3px solid var(--ink); font-weight: 700; }
+h3 { font-size: 19px; margin: 32px 0 8px; font-weight: 600; }
+h2 .num, h3 .num { font-family: var(--font-mono); font-size: .8em; color: var(--accent); margin-right: 8px; font-weight: 600; }
+.lede { font-size: 18px; color: var(--muted); margin: 0; max-width: 62ch; }
+p, li { max-width: 68ch; }
+
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 20px; }
+.meta div { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+.meta b { display: block; font: 600 11.5px/1.4 var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+ol.steps { padding-left: 22px; }
+ol.steps > li { margin: 8px 0; }
+.kbd, kbd { font: 13px var(--font-mono); background: var(--surface); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+code { font: .9em var(--font-mono); background: var(--accent-soft); padding: 1px 4px; border-radius: 3px; overflow-wrap: anywhere; }
+.menu { font-weight: 600; }
+
+.note, .predict, .warn { border-radius: 6px; padding: 12px 16px; margin: 16px 0; max-width: 760px; font-size: 15px; }
+.note { background: var(--accent-soft); border-left: 4px solid var(--accent); }
+.predict { background: var(--warm-soft); border-left: 4px solid var(--warm); }
+.warn { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--warm); }
+.note > :first-child, .predict > :first-child, .warn > :first-child { margin-top: 0; }
+.note > :last-child, .predict > :last-child, .warn > :last-child { margin-bottom: 0; }
+.tag { font: 600 11.5px/1 var(--font-display); letter-spacing: .07em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.predict .tag { color: var(--warm); }
+.note .tag { color: var(--accent); }
+
+/* Parameters panel */
+.params { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 20px; max-width: 760px; }
+.params form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.params label { display: grid; gap: 4px; font: 600 13px var(--font-display); letter-spacing: .03em; }
+.params input { font: 16px var(--font-mono); padding: 8px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); color: var(--ink); }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.pgrid div { border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
+.pgrid b { display: block; font: 600 11.5px/1.3 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.pgrid span.big { font: 600 22px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; }
+.pgrid small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.example-flag { font-size: 13px; color: var(--warm); margin: 10px 0 0; }
+
+/* Code */
+.code { margin: 14px 0 20px; border-radius: 8px; overflow: hidden; background: var(--code-bg); max-width: 860px; border: 1px solid var(--rule); }
+.code .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 8px 6px 14px; background: rgba(255,255,255,.06); color: #9fb2c2; font: 12.5px var(--font-mono); }
+.code button { font: 600 12px var(--font-display); letter-spacing: .04em; color: #d8e3ec; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.code button:hover { background: rgba(255,255,255,.16); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; color: var(--code-ink); font: 13.5px/1.55 var(--font-mono); tab-size: 2; }
+.tc { color: #7f95a6; font-style: italic; }
+.ts { color: #e9bb78; }
+.tp { color: #86c7ea; }
+.tk { color: #9fd8b4; }
+.tprompt { color: #7f95a6; user-select: none; }
+.pv { background: rgba(232,161,96,.22); border-bottom: 1px dashed #e8a160; border-radius: 2px; }
+
+/* Figures */
+figure { margin: 22px 0 26px; max-width: 900px; }
+.fig-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px; }
+figure svg { display: block; width: 100%; height: auto; min-width: 560px; color: var(--ink); font-family: var(--font-body); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 70ch; }
+svg .mono { font-family: var(--font-mono); }
+svg .muted { fill: var(--muted); }
+svg .f-surface { fill: var(--surface); }
+svg .f-bg { fill: var(--bg); }
+svg .f-accent { fill: var(--accent); }
+svg .f-accent-soft { fill: var(--accent-soft); }
+svg .f-warm { fill: var(--warm); }
+svg .f-warm-soft { fill: var(--warm-soft); }
+svg .s-accent { stroke: var(--accent); }
+svg .s-warm { stroke: var(--warm); }
+svg .s-rule { stroke: var(--rule); }
+svg .t-accent { fill: var(--accent); }
+svg .t-warm { fill: var(--warm); }
+svg .t-onaccent { fill: var(--surface); }
+
+/* Tables / worksheets */
+.tbl { overflow-x: auto; max-width: 860px; margin: 14px 0 22px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; background: var(--surface); }
+th, td { border: 1px solid var(--rule); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { font: 600 13px/1.3 var(--font-display); letter-spacing: .03em; background: var(--bg); }
+td.blank { min-width: 90px; height: 34px; }
+td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; }
+td code { white-space: nowrap; }
+caption { caption-side: top; text-align: left; font: 600 13px var(--font-display); color: var(--muted); padding-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
+
+.formula { font: 15px/1.8 var(--font-mono); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 16px; max-width: 760px; overflow-x: auto; font-variant-numeric: tabular-nums; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; max-width: 860px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; position: relative; }
+.card h4 { margin: 0 0 6px; font: 600 16px var(--font-display); }
+.card p { margin: 0; font-size: 14.5px; }
+.card .cn { font: 600 12px var(--font-mono); color: var(--muted); }
+.card.mine { border: 2px solid var(--warm); }
+.card.mine::after { content: "Your card"; position: absolute; top: 10px; right: 12px; font: 600 11px var(--font-display); letter-spacing: .06em; text-transform: uppercase; color: var(--warm); }
+
+details { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; margin: 8px 0; max-width: 760px; }
+summary { cursor: pointer; padding: 10px 14px; font-weight: 600; }
+details > div { padding: 0 14px 12px; font-size: 15px; }
+
+.copy-btn { font: 600 13px var(--font-display); color: var(--surface); background: var(--accent); border: 0; border-radius: 5px; padding: 8px 14px; cursor: pointer; }
+.copy-btn:hover { filter: brightness(1.1); }
+.status { font-size: 13px; color: var(--muted); margin-left: 8px; }
+
+/* Contents block */
+.contents { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 860px; }
+.contents div { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
+.contents h4 { margin: 0 0 6px; font: 600 12px/1.3 var(--font-display); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); }
+.contents ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 14.5px; }
+.contents a { text-decoration: none; color: var(--ink); }
+.contents a:hover { color: var(--accent); text-decoration: underline; }
+.contents .n { font: 600 12.5px var(--font-mono); color: var(--muted); display: inline-block; min-width: 2.2em; }
+
+/* FAQ */
+.faq-group { margin: 22px 0 6px; font: 600 13px/1.3 var(--font-display); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+details .err { font: 13px/1.5 var(--font-mono); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 10px; display: block; overflow-x: auto; white-space: pre; margin: 6px 0; }
+.faq-tools { display: flex; gap: 10px; margin: 10px 0; }
+.faq-tools button { font: 600 13px var(--font-display); background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+.faq-tools button:hover { border-color: var(--accent); }
+
+.fab { position: fixed; right: 16px; bottom: 16px; z-index: 5; background: var(--accent); color: var(--surface); font: 600 13px var(--font-display); letter-spacing: .04em; padding: 10px 14px; border-radius: 999px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+@media (min-width: 1080px) { .fab { display: none; } }
+@media print { .fab, .faq-tools { display: none !important; } details { break-inside: avoid; } }
+
+footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13.5px; }
+
+@media print {
+  nav.toc, .code button, .copy-btn, .params form { display: none !important; }
+  body { background: #fff; }
+  .shell { display: block; }
+  h2 { break-before: page; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="toc" aria-label="Steps">
+  <ol>
+    <li><a href="#top">Overview</a></li>
+    <li><a href="#contents">Contents</a></li>
+    <li><a href="#faq">FAQ · Instant Contiki &amp; Cooja</a></li>
+    <li><a href="#params">0 · Your parameters</a></li>
+    <li class="grp">Part A · Build</li>
+    <li><a href="#s1">1 · Start Cooja</a></li>
+    <li><a href="#s2">2 · Create the project</a></li>
+    <li><a href="#s3">3 · Resource and server</a></li>
+    <li><a href="#s4">4 · Write the client</a></li>
+    <li><a href="#s4b">4b · Check the size</a></li>
+    <li><a href="#s5">5 · Build the topology</a></li>
+    <li><a href="#s6">6 · Connect the border router</a></li>
+    <li><a href="#s7">7 · Start the capture</a></li>
+    <li class="grp">Part B · Measure</li>
+    <li><a href="#e1">E1 · Hop by hop</a></li>
+    <li><a href="#e2">E2 · Decode IPHC</a></li>
+    <li><a href="#e3">E3 · Fragmentation</a></li>
+    <li><a href="#e4">E4 · Separate response</a></li>
+    <li><a href="#e5">E5 · Block-Wise instead</a></li>
+    <li><a href="#bonus">Bonus · Loss</a></li>
+    <li class="grp">Part C · Argue</li>
+    <li><a href="#design">Scenario card</a></li>
+    <li class="grp">Part D · Present</li>
+    <li><a href="#video">The 10-minute video</a></li>
+    <li><a href="#submit">Submission</a></li>
+    <li><a href="#rubric">Rubric</a></li>
+  </ol>
+</nav>
+<a class="fab" href="#contents">Contents ↑</a>
+
+<main>
+<div class="col">
+<header class="top" id="top">
+  <div class="eyebrow">CSE 427 · Wireless Sensor Networks · Week 6 assignment</div>
+  <h1>Follow one reading through the stack</h1>
+  <p class="lede">You will build a small multi-hop CoAP network in Cooja, capture what goes over the air, and use your own packets to explain names, addresses, routes, 6LoWPAN compression, fragmentation and CoAP. Then you prove it in a video of at most 10 minutes.</p>
+  <div class="meta">
+    <div><b>Platform</b>Instant Contiki 3.0 · Cooja · Wireshark</div>
+    <div><b>Hands-on time</b>About 3 hours</div>
+    <div><b>Video</b>10:00 maximum, your voice, your screen</div>
+    <div><b>You submit</b>Video · .pcap capture · worksheet</div>
+  </div>
+</header>
+
+<h3>What the assignment covers</h3>
+<p>Week 6 tells one story: <em>what</em> the application wants (a name), <em>where</em> it lives (an address), <em>how to reach</em> it (a route), and <em>how to fit</em> IPv6 into a 127-byte radio frame (6LoWPAN). Every experiment below checks one part of that story against real frames from your own simulation.</p>
+<div class="tbl"><table>
+  <thead><tr><th>Experiment</th><th>Lecture topic it proves</th><th>Lecture slides</th></tr></thead>
+  <tbody>
+    <tr><td>E1 · Hop by hop</td><td>Name vs address vs route; which identifiers change per hop</td><td class="num">4–10, 31</td></tr>
+    <tr><td>E2 · Decode IPHC</td><td>LOWPAN_IPHC and UDP NHC compression</td><td class="num">16–24</td></tr>
+    <tr><td>E3 · Fragmentation</td><td>FRAG1 / FRAGN, offsets, fragment count, p<sup>N</sup></td><td class="num">25–30</td></tr>
+    <tr><td>E4 · Separate response</td><td>CON / ACK, Message ID vs Token, retransmission</td><td class="num">41–45</td></tr>
+    <tr><td>E5 · Block-Wise</td><td>Block2 at the CoAP layer vs fragmentation at 6LoWPAN</td><td class="num">47, 29–30</td></tr>
+    <tr><td>Scenario card</td><td>Choosing CoAP or MQTT-SN</td><td class="num">50–60</td></tr>
+  </tbody>
+</table></div>
+</div>
+
+<!-- ============ CONTENTS ============ -->
+<section id="contents">
+<h2>Contents</h2>
+<div class="contents">
+  <div>
+    <h4>Before you start</h4>
+    <ol>
+      <li><a href="#faq"><span class="n">?</span>FAQ: Instant Contiki &amp; Cooja</a></li>
+      <li><a href="#params"><span class="n">0</span>Your parameters</a></li>
+    </ol>
+  </div>
+  <div>
+    <h4>Part A · Build</h4>
+    <ol>
+      <li><a href="#s1"><span class="n">1</span>Start Cooja</a></li>
+      <li><a href="#s2"><span class="n">2</span>Create the project</a></li>
+      <li><a href="#s3"><span class="n">3</span>Resource and server</a></li>
+      <li><a href="#s4"><span class="n">4</span>Write the client</a></li>
+      <li><a href="#s4b"><span class="n">4b</span>Check the size</a></li>
+      <li><a href="#s5"><span class="n">5</span>Build the topology</a></li>
+      <li><a href="#s6"><span class="n">6</span>Connect the border router</a></li>
+      <li><a href="#s7"><span class="n">7</span>Start the capture</a></li>
+    </ol>
+  </div>
+  <div>
+    <h4>Part B · Measure</h4>
+    <ol>
+      <li><a href="#e1"><span class="n">E1</span>One request, hop by hop</a></li>
+      <li><a href="#e2"><span class="n">E2</span>Decode IPHC</a></li>
+      <li><a href="#e3"><span class="n">E3</span>Fragmentation</a></li>
+      <li><a href="#e4"><span class="n">E4</span>Separate response</a></li>
+      <li><a href="#e5"><span class="n">E5</span>Block-Wise instead</a></li>
+      <li><a href="#bonus"><span class="n">+5</span>Bonus: loss</a></li>
+    </ol>
+  </div>
+  <div>
+    <h4>Parts C &amp; D · Argue and present</h4>
+    <ol>
+      <li><a href="#design"><span class="n">C</span>Your scenario card</a></li>
+      <li><a href="#video"><span class="n">D</span>The 10-minute video</a></li>
+      <li><a href="#submit"><span class="n">↥</span>Submission</a></li>
+      <li><a href="#rubric"><span class="n">✓</span>Rubric</a></li>
+    </ol>
+  </div>
+</div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+<h2><span class="num">?</span>FAQ: Instant Contiki &amp; Cooja</h2>
+<div class="col">
+<p>Read this once before you start. Most problems in this assignment come from the VM, from Cooja, or from the Sky mote's small memory, not from your code. Find your error message below.</p>
+</div>
+<div class="faq-tools"><button type="button" id="faqOpen">Open all</button><button type="button" id="faqClose">Close all</button></div>
+
+<div class="faq-group">The virtual machine</div>
+<details><summary>Which VM, and which login?</summary><div>
+<p>Instant Contiki 3.0. Log in as <code>user</code> with password <code>user</code>; <code>sudo</code> asks for the same password. It ships as a VMware image and runs in the free VMware Workstation Player.</p>
+</div></details>
+<details><summary>Can I use VirtualBox instead of VMware?</summary><div>
+<p>Yes. Create a new VM of type Linux / Ubuntu (32-bit), choose <b>Use an existing virtual hard disk</b>, and select the <code>.vmdk</code> file from the download that has <em>no</em> <code>-s00…</code> suffix. Give the VM at least 2 GB of RAM and 2 CPUs; Cooja is slow with the default 512 MB.</p>
+</div></details>
+<details><summary>I have an Apple Silicon Mac (M1, M2, M3, M4)</summary><div>
+<p>Instant Contiki is a 32-bit x86 VM. VirtualBox and VMware on Apple Silicon run ARM guests only, so the VM will not boot there. UTM can emulate x86, but Cooja becomes very slow. Use a lab PC or any Windows/Linux laptop with an Intel or AMD CPU, and tell your instructor early if you have no access to one.</p>
+</div></details>
+<details><summary>My keyboard types the wrong characters (| # &lt; &gt; [ ])</summary><div>
+<p>The VM defaults to a US keyboard layout. Add your layout (for example Turkish Q) in the VM's keyboard / text entry settings and select it from the top bar, or learn where the US keys are. Check this before you type C code.</p>
+</div></details>
+<details><summary>Where is Contiki? My path is not <code>~/contiki</code></summary><div>
+<p>Run <code>ls ~</code>. Most copies of Instant Contiki 3.0 use <code>~/contiki</code>; some downloads unpack to <code>~/contiki-3.0</code>. If yours differs, replace <code>~/contiki</code> in every command on this page.</p>
+</div></details>
+<details><summary>How do I get my .pcap and video files out of the VM?</summary><div>
+<p>Use a shared folder (VMware: VM → Settings → Options → Shared Folders; VirtualBox: Devices → Shared Folders), drag-and-drop if guest tools are installed, or a USB stick passed through to the VM. You need the <code>.pcap</code> files for your submission, so test this early.</p>
+</div></details>
+
+<div class="faq-group">Cooja</div>
+<details><summary><code>ant run</code> fails: "Could not find the MSPSim build file"</summary><div>
+<span class="err">BUILD FAILED .../tools/cooja/build.xml: ... Could not find the MSPSim build file.
+Did you run "git submodule update --init"?</span>
+<p>The MSPSim simulator (needed for Sky motes) is a git submodule that is missing in some downloads. With internet access in the VM, run:</p>
+<span class="err">cd ~/contiki
+git submodule update --init
+cd tools/cooja
+ant run</span>
+<p>Do not use <code>sudo</code> for <code>ant run</code>.</p>
+</div></details>
+<details><summary>I ran something with <code>sudo</code> and now I get "Permission denied"</summary><div>
+<p>Files created with <code>sudo</code> belong to root. Give them back to your user: <code>sudo chown -R user:user ~/contiki</code>. Only <code>make connect-router-cooja</code> needs <code>sudo</code>, and it asks for it by itself.</p>
+</div></details>
+<details><summary>Cooja is very slow or freezes</summary><div>
+<p>Give the VM more RAM and CPUs. Start Cooja with <code>ant run_bigmem</code> for more Java memory. Close plugins you are not using. Keep the Radio messages window closed until you need a capture: logging every frame costs time.</p>
+</div></details>
+<details><summary>Where is the button? Where is "Change transmission ranges"?</summary><div>
+<p>Both are context menus. Right-click a mote in the Network window for <span class="menu">Click button on Sky n</span> and <span class="menu">Mote tools for Sky n</span>. Right-click an empty area of the Network window for <span class="menu">Change transmission ranges</span> (only with the UDGM radio medium).</p>
+</div></details>
+<details><summary>I changed my code, but the motes still run the old firmware</summary><div>
+<p>Run <code>make TARGET=sky clean</code> in <code>~/contiki/examples/cse427-w6</code>, then <span class="menu">File → Reload simulation</span>. Both boot messages (<code>W6 server, REST_MAX_CHUNK_SIZE=…</code> and <code>W6 client up</code>) tell you which build is running.</p>
+</div></details>
+<details><summary>Mote type compilation fails with "No rule to make target" or "cannot run program make"</summary><div>
+<p>The source file is in the wrong folder, or the path contains spaces. Keep every file directly in <code>~/contiki/examples/cse427-w6/</code>, next to the <code>Makefile</code>, and browse to that folder in the Create mote type dialog.</p>
+</div></details>
+
+<div class="faq-group">Building for Sky motes</div>
+<details><summary>Why not just use the stock <code>er-example-server</code>?</summary><div>
+<p>A Sky mote has 48 KB of flash and 10 KB of RAM. The stock Erbium server compiles all of its example resources, and with Instant Contiki's msp430-gcc it is known to overflow the Sky's flash. That is why Step 2 builds a separate project with only the two resources you need.</p>
+</div></details>
+<details><summary>"section .text will not fit in region rom"</summary><div>
+<p>Flash is full. Check that the <code>Makefile</code> lists only <code>res-student.c res-separate.c</code>, that <code>SMALL = 1</code> is set, and that <code>project-conf.h</code> uses <code>nullrdc_driver</code> and <code>nullmac_driver</code>. Measure with <code>msp430-size</code> (<a href="#s4b">Step 4b</a>).</p>
+</div></details>
+<details><summary>"region .bss overflowed", "UIP_CONF_BUFFER_SIZE too small", or a mote reboots during the big response</summary><div>
+<p>RAM is full or the stack is overwriting data. In <code>project-conf.h</code>, lower <code>COAP_MAX_OPEN_TRANSACTIONS</code> to 1 and <code>NBR_TABLE_CONF_MAX_NEIGHBORS</code> / <code>UIP_CONF_MAX_ROUTES</code> to 4, then rebuild. If it still fails, tell your instructor your L; it may need a lower cap.</p>
+</div></details>
+<details><summary>"undefined reference to res_student" (or res_separate)</summary><div>
+<p>The resource file is not being compiled. Check that <code>res-student.c</code> and <code>res-separate.c</code> are in the project folder and listed on the <code>PROJECT_SOURCEFILES</code> line of the <code>Makefile</code>.</p>
+</div></details>
+
+<div class="faq-group">Border router and RPL</div>
+<details><summary>tunslip6: "can't connect to 127.0.0.1:60001: Connection refused"</summary><div>
+<p>Cooja is not listening yet. Start <span class="menu">Serial Socket (SERVER)</span> on node 1, click Start in it, start the simulation, and only then run <code>make connect-router-cooja</code>.</p>
+</div></details>
+<details><summary>tunslip6 fails because tun0 is busy, or a second copy is running</summary><div>
+<p>An old tunslip6 from a previous run still holds the tunnel. Stop it with <code>sudo killall tunslip6</code>, then run <code>make connect-router-cooja</code> again. Do this every time you reload the simulation.</p>
+</div></details>
+<details><summary>The client prints "No global address yet" forever</summary><div>
+<p>The border router never received its prefix, or the motes cannot hear each other. Check that tunslip6 printed <code>Server IPv6 addresses</code>, and that every mote's green range circle reaches its neighbours. RPL needs up to a minute of simulated time to form; wait before you worry.</p>
+</div></details>
+<details><summary>The client prints "--Done: 0 bytes--" for every request</summary><div>
+<p><code>SERVER_NODE</code> does not match node 2's address (read it from node 2's output), or <code>RESOURCE_PATH</code> in the client differs from the path in <code>rest_activate_resource</code> in the server. Both paths must be identical, with no leading slash.</p>
+</div></details>
+<details><summary>My border router prints <code>aaaa::</code> addresses, not <code>fd00::</code></summary><div>
+<p>Use your border router's prefix everywhere: in <code>SERVER_NODE</code>, in <code>ping6</code>, and in Wireshark's 6LoWPAN context 0.</p>
+</div></details>
+
+<div class="faq-group">Capture and Wireshark</div>
+<details><summary>Where is the .pcap file?</summary><div>
+<p>Cooja writes it as <code>radiolog-&lt;number&gt;.pcap</code> in the folder where Cooja is running, usually under <code>~/contiki/tools/cooja</code>. The <code>find</code> command in <a href="#s7">Step 7</a> locates it. Every new capture creates a new file.</p>
+</div></details>
+<details><summary>The .pcap file is empty or ends early</summary><div>
+<p>Cooja may still hold data in memory. Pause the simulation and close the Radio messages window (or quit Cooja) before you copy the file.</p>
+</div></details>
+<details><summary>Wireshark shows "Bad FCS" or does not decode 6LoWPAN</summary><div>
+<p>Cooja's pcap uses the 802.15.4 link type that expects a 2-byte checksum (FCS) at the end of each frame, and simulated frames may not carry a valid one. In <span class="menu">Preferences → Protocols → IEEE 802.15.4</span>, turn off the option that dissects only frames with a good FCS, or change the FCS format. The option names differ between Wireshark versions.</p>
+</div></details>
+<details><summary>Addresses in Wireshark look wrong or shortened</summary><div>
+<p>Set <span class="menu">Preferences → Protocols → 6LoWPAN → Context 0</span> to <code>fd00::/64</code>. IPHC removed the prefix from the frames, and Wireshark needs the context to restore it.</p>
+</div></details>
+<details><summary>Every frame appears many times</summary><div>
+<p>ContikiMAC is running on at least one mote type: it repeats each frame until the receiver wakes up. Check the <code>NETSTACK_CONF_RDC</code> lines in both <code>project-conf.h</code> files, run <code>make TARGET=sky clean</code> in both folders, and reload.</p>
+</div></details>
+<details><summary>I see no link-layer retransmissions at all</summary><div>
+<p>Expected: <code>nullmac_driver</code> has no retry logic, which saves flash. Only CoAP retransmits in this setup. This matters for the bonus question.</p>
+</div></details>
+
+<div class="faq-group">The assignment</div>
+<details><summary>Can I use Z1 motes, Contiki-NG, or my own laptop's Contiki install?</summary><div>
+<p>No. Use Instant Contiki 3.0 with Sky motes, so that every capture follows the same frame formats and the rubric is fair.</p>
+</div></details>
+<details><summary>My predicted fragment count is off by one</summary><div>
+<p>Check two things: 8-byte alignment of fragment payloads, and whether you used the compressed or uncompressed datagram size. That difference is exactly what E3 wants you to explain, so keep the wrong prediction on your worksheet and explain it.</p>
+</div></details>
+<details><summary>Can my video be shorter than 10 minutes?</summary><div>
+<p>Yes, if it covers every part of the rubric. Anything after 10:00 is not graded.</p>
+</div></details>
+</section>
+
+<!-- ============ STEP 0 ============ -->
+<section id="params">
+<h2><span class="num">0</span>Your parameters</h2>
+<div class="col">
+<p>Every student gets different numbers, so every capture is different. Type your student number and surname. The page fills your values into all code blocks below (highlighted like <span class="pv">this</span>).</p>
+</div>
+<div class="params">
+  <form id="pform" autocomplete="off">
+    <label for="stno">Student number<input id="stno" inputmode="numeric" value="2022123457"></label>
+    <label for="surname">Surname<input id="surname" value="Yılmaz"></label>
+  </form>
+  <div class="pgrid" aria-live="polite">
+    <div><b>Payload L</b><span class="big" data-p="L">157</span><small>bytes in your resource = 100 + last two digits</small></div>
+    <div><b>Hops H</b><span class="big" data-p="H">3</span><small>client → target = 2 + (last digit mod 3)</small></div>
+    <div><b>Motes</b><span class="big" data-p="motes">5</span><small>1 border router + <span data-p="H">3</span> servers + 1 client</small></div>
+    <div><b>Block size B</b><span class="big" data-p="B">64</span><small>for E5: 32 if last digit even, 64 if odd</small></div>
+    <div><b>Scenario card</b><span class="big" data-p="card">4</span><small>(last digit mod 4) + 1, see Part C</small></div>
+    <div><b>RX success p</b><span class="big" data-p="p">0.95</span><small>bonus only, from the tens digit</small></div>
+    <div style="grid-column: 1 / -1"><b>Your resource</b><span class="big" style="font-size:18px">/<span data-p="path">sensors/yilmaz</span></span><small>Turkish letters are converted (ı→i, ş→s…), max 12 letters</small></div>
+  </div>
+  <p class="example-flag" id="exflag">The values shown are an example. Enter your own before you start.</p>
+</div>
+</section>
+
+<!-- ============ PART A ============ -->
+<section id="s1">
+<h2><span class="num">1</span>Start Instant Contiki and Cooja</h2>
+<div class="col">
+<p>Boot the Instant Contiki 3.0 VM (login <code>user</code>, password <code>user</code>) and open a terminal.</p>
+</div>
+<div class="code"><div class="bar"><span>terminal 1</span><button type="button">Copy</button></div><pre data-lang="sh">$ cd ~/contiki/tools/cooja
+$ ant run</pre></div>
+<div class="col">
+<p>Leave this terminal running and open a second one for the next steps. If <code>ant run</code> fails, see the <a href="#faq">FAQ</a> first. Your own code goes in a new folder, <code>~/contiki/examples/cse427-w6/</code>, plus one small change in <code>~/contiki/examples/ipv6/rpl-border-router/</code>.</p>
+<div class="note"><span class="tag">Addresses on this page</span>All addresses assume the <code>fd00::/64</code> prefix that the Contiki 3.0 border router uses by default. If your border router prints <code>aaaa::</code> addresses in Step 6, use that prefix everywhere instead.</div>
+</div>
+</section>
+
+<section id="s2">
+<h2><span class="num">2</span>Create your project</h2>
+<div class="col">
+<p>You build a small project of your own instead of editing the stock CoAP example. The stock <code>er-example-server</code> compiles about ten example resources and is known not to fit in a Sky mote's 48 KB of flash. Your project compiles only the two resources you need.</p>
+</div>
+<div class="code"><div class="bar"><span>terminal 2</span><button type="button">Copy</button></div><pre data-lang="sh">$ mkdir ~/contiki/examples/cse427-w6
+$ cd ~/contiki/examples/cse427-w6
+$ cp ../er-rest-example/resources/res-separate.c .</pre></div>
+<div class="col">
+<p>Create the <code>Makefile</code>:</p>
+</div>
+<div class="code"><div class="bar"><span>cse427-w6/Makefile · new file</span><button type="button">Copy</button></div><pre data-lang="sh">all: wsn-server wsn-client
+
+CONTIKI = ../..
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
+
+# Only the two resources this assignment needs (Sky flash is 48 KB)
+PROJECT_SOURCEFILES += res-student.c res-separate.c
+
+# Smaller binaries
+SMALL = 1
+
+# Erbium CoAP and the REST engine
+APPS += er-coap
+APPS += rest-engine
+
+CONTIKI_WITH_IPV6 = 1
+include $(CONTIKI)/Makefile.include</pre></div>
+<div class="col">
+<p>Create <code>project-conf.h</code>. The server and client both use it, so they always agree on the stack.</p>
+</div>
+<div class="code"><div class="bar"><span>cse427-w6/project-conf.h · new file</span><button type="button">Copy</button></div><pre data-lang="c">#ifndef PROJECT_CONF_H_
+#define PROJECT_CONF_H_
+
+/* Radio always on, no MAC retries: saves flash, and gives one frame
+   on air per transmission (ContikiMAC repeats every frame). */
+#undef  NETSTACK_CONF_RDC
+#define NETSTACK_CONF_RDC           nullrdc_driver
+#undef  NETSTACK_CONF_MAC
+#define NETSTACK_CONF_MAC           nullmac_driver
+
+/* No TCP on CoAP nodes */
+#undef  UIP_CONF_TCP
+#define UIP_CONF_TCP                0
+
+/* 6LoWPAN fragmentation on */
+#undef  SICSLOWPAN_CONF_FRAG
+#define SICSLOWPAN_CONF_FRAG        1
+
+/* IP buffer: must hold COAP_MAX_HEADER_SIZE + REST_MAX_CHUNK_SIZE + 48 */
+#undef  UIP_CONF_BUFFER_SIZE
+#define UIP_CONF_BUFFER_SIZE        300
+
+/* THE KNOB. Config B (E1 to E4): 200. Config A (E5): your block size B. */
+#undef  REST_MAX_CHUNK_SIZE
+#define REST_MAX_CHUNK_SIZE         200
+
+/* Save RAM: Sky motes have 10 KB */
+#undef  COAP_MAX_HEADER_SIZE
+#define COAP_MAX_HEADER_SIZE        40
+#undef  COAP_MAX_OPEN_TRANSACTIONS
+#define COAP_MAX_OPEN_TRANSACTIONS  2
+#undef  COAP_LINK_FORMAT_FILTERING
+#define COAP_LINK_FORMAT_FILTERING  0
+#undef  COAP_PROXY_OPTION_PROCESSING
+#define COAP_PROXY_OPTION_PROCESSING 0
+#undef  NBR_TABLE_CONF_MAX_NEIGHBORS
+#define NBR_TABLE_CONF_MAX_NEIGHBORS 6
+#undef  UIP_CONF_MAX_ROUTES
+#define UIP_CONF_MAX_ROUTES         6
+
+#endif /* PROJECT_CONF_H_ */</pre></div>
+<div class="col">
+<p>The border router must use the same radio duty cycling, or it cannot talk to your motes. Open <code>examples/ipv6/rpl-border-router/project-conf.h</code> and add these lines just above its final <code>#endif</code> (skip this if they are already there):</p>
+</div>
+<div class="code"><div class="bar"><span>rpl-border-router/project-conf.h · add at the bottom</span><button type="button">Copy</button></div><pre data-lang="c">#undef  NETSTACK_CONF_RDC
+#define NETSTACK_CONF_RDC  nullrdc_driver</pre></div>
+<div class="col">
+<div class="note"><span class="tag">Why these settings</span><code>REST_MAX_CHUNK_SIZE</code> is the largest CoAP payload one message may carry. At 200, your whole <span data-p="L">157</span>-byte payload goes in one CoAP response that is too big for one radio frame, so 6LoWPAN must fragment it (Config B). In E5 you lower it to <span data-p="B">64</span>, and CoAP splits the payload into blocks itself (Config A).</div>
+</div>
+</section>
+
+<section id="s3">
+<h2><span class="num">3</span>Your resource and the server</h2>
+<div class="col">
+<p>Create <code>res-student.c</code> in the project folder. The payload is predictable (byte <i>k</i> is the letter <code>'A' + k mod 26</code>), so you can check block numbers and fragment offsets by eye in Wireshark.</p>
+</div>
+<div class="code"><div class="bar"><span>cse427-w6/res-student.c · new file</span><button type="button">Copy</button></div><pre data-lang="c">/* CSE 427 Week 6: a resource whose size you control */
+#include &lt;string.h&gt;
+#include "rest-engine.h"
+
+#define PAYLOAD_LEN  <span class="pv" data-p="L">157</span>   /* L from Step 0 */
+
+static void res_get_handler(void *request, void *response, uint8_t *buffer,
+                            uint16_t preferred_size, int32_t *offset);
+
+RESOURCE(res_student,
+         "title=\"Week 6 sensor\";rt=\"Text\"",
+         res_get_handler, NULL, NULL, NULL);
+
+/* Byte k of the representation is 'A' + (k % 26). */
+static void
+fill(uint8_t *buffer, int32_t start, int32_t n)
+{
+  int32_t i;
+  for(i = 0; i &lt; n; i++) {
+    buffer[i] = 'A' + ((start + i) % 26);
+  }
+}
+
+static void
+res_get_handler(void *request, void *response, uint8_t *buffer,
+                uint16_t preferred_size, int32_t *offset)
+{
+  int32_t n;
+
+  REST.set_header_content_type(response, REST.type.TEXT_PLAIN);
+
+  /* Config B: the whole representation fits in one CoAP message. */
+  if(*offset == 0 &amp;&amp; preferred_size &gt;= PAYLOAD_LEN) {
+    fill(buffer, 0, PAYLOAD_LEN);
+    REST.set_response_payload(response, buffer, PAYLOAD_LEN);
+    return;                /* offset untouched, so no Block2 option */
+  }
+
+  /* Config A: serve one block that starts at *offset. */
+  if(*offset &gt;= PAYLOAD_LEN) {
+    const char *msg = "BlockOutOfScope";
+    REST.set_response_status(response, REST.status.BAD_OPTION);
+    REST.set_response_payload(response, msg, strlen(msg));
+    return;
+  }
+  n = PAYLOAD_LEN - *offset;
+  if(n &gt; preferred_size) {
+    n = preferred_size;
+  }
+  fill(buffer, *offset, n);
+  REST.set_response_payload(response, buffer, n);
+
+  *offset += n;            /* tells Erbium this resource is block-aware */
+  if(*offset &gt;= PAYLOAD_LEN) {
+    *offset = -1;          /* -1 marks the last block */
+  }
+}</pre></div>
+<div class="col">
+<p>Now create the server. It serves only your resource and the separate-response demo you copied in Step 2. Pressing the server's button releases a waiting separate response (you need this in E4).</p>
+</div>
+<div class="code"><div class="bar"><span>cse427-w6/wsn-server.c · new file</span><button type="button">Copy</button></div><pre data-lang="c">/* CSE 427 Week 6 server */
+#include &lt;stdio.h&gt;
+#include "contiki.h"
+#include "contiki-net.h"
+#include "rest-engine.h"
+#include "er-coap-engine.h"
+#include "dev/button-sensor.h"
+
+extern resource_t res_student, res_separate;
+
+PROCESS(wsn_server, "CSE427 W6 server");
+AUTOSTART_PROCESSES(&amp;wsn_server);
+
+PROCESS_THREAD(wsn_server, ev, data)
+{
+  PROCESS_BEGIN();
+  PROCESS_PAUSE();
+
+  printf("W6 server, REST_MAX_CHUNK_SIZE=%u\n", REST_MAX_CHUNK_SIZE);
+
+  rest_init_engine();
+  rest_activate_resource(&amp;res_student, "<span class="pv" data-p="path">sensors/yilmaz</span>");
+  rest_activate_resource(&amp;res_separate, "test/separate");
+
+  SENSORS_ACTIVATE(button_sensor);
+
+  while(1) {
+    PROCESS_WAIT_EVENT();
+    if(ev == sensors_event &amp;&amp; data == &amp;button_sensor) {
+      printf("Button: sending the separate response\n");
+      res_separate.resume();
+    }
+  }
+
+  PROCESS_END();
+}</pre></div>
+</section>
+
+<section id="s4">
+<h2><span class="num">4</span>Write the client</h2>
+<div class="col">
+<p>Create <code>wsn-client.c</code> in the project folder. It waits until RPL gives it a global address, then sends a confirmable <code>GET</code> to your resource every 20 seconds. Pressing its button sends one <code>GET /test/separate</code>. Every request carries a 2-byte Token <code>06 nn</code>, where <code>nn</code> counts requests, so you can match requests to responses.</p>
+</div>
+<div class="code"><div class="bar"><span>cse427-w6/wsn-client.c · new file</span><button type="button">Copy</button></div><pre data-lang="c">/* CSE 427 Week 6 client */
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include "contiki.h"
+#include "contiki-net.h"
+#include "net/ipv6/uip-ds6.h"
+#include "er-coap-engine.h"
+#include "dev/button-sensor.h"
+
+/* Global address of node 2, your target server. Confirm it in node 2's output. */
+#define SERVER_NODE(ipaddr) \
+  uip_ip6addr(ipaddr, 0xfd00, 0, 0, 0, 0x0212, 0x7402, 0x0002, 0x0202)
+
+#define RESOURCE_PATH     "<span class="pv" data-p="path">sensors/yilmaz</span>"
+#define REQUEST_INTERVAL  20      /* seconds between requests */
+#define REMOTE_PORT       UIP_HTONS(COAP_DEFAULT_PORT)
+
+PROCESS(wsn_client, "CSE427 W6 client");
+AUTOSTART_PROCESSES(&amp;wsn_client);
+
+static uip_ipaddr_t server_ipaddr;
+static struct etimer et;
+static uint16_t received;
+static uint8_t req_no;
+static uint8_t token[2];
+
+static void
+on_response(void *response)
+{
+  const uint8_t *chunk;
+  int len = coap_get_payload(response, &amp;chunk);
+  received += len;
+  printf("  got %d bytes (total %u)\n", len, received);
+}
+
+static void
+prepare(coap_packet_t *request, const char *path)
+{
+  coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
+  coap_set_header_uri_path(request, path);
+  token[0] = 0x06;          /* week 6 */
+  token[1] = ++req_no;      /* a new Token for every request */
+  coap_set_token(request, token, 2);
+  received = 0;
+}
+
+PROCESS_THREAD(wsn_client, ev, data)
+{
+  static coap_packet_t request[1];
+
+  PROCESS_BEGIN();
+
+  SERVER_NODE(&amp;server_ipaddr);
+  coap_init_engine();
+  SENSORS_ACTIVATE(button_sensor);
+  etimer_set(&amp;et, REQUEST_INTERVAL * CLOCK_SECOND);
+  printf("W6 client up. Button = GET /test/separate\n");
+
+  while(1) {
+    PROCESS_YIELD();
+
+    if(etimer_expired(&amp;et)) {
+      if(uip_ds6_get_global(ADDR_PREFERRED) == NULL) {
+        printf("No global address yet (RPL not joined)\n");
+      } else {
+        prepare(request, RESOURCE_PATH);
+        printf("--GET /%s token 06%02x--\n", RESOURCE_PATH, req_no);
+        COAP_BLOCKING_REQUEST(&amp;server_ipaddr, REMOTE_PORT, request, on_response);
+        printf("--Done: %u bytes--\n", received);
+      }
+      etimer_reset(&amp;et);
+
+    } else if(ev == sensors_event &amp;&amp; data == &amp;button_sensor) {
+      prepare(request, "test/separate");
+      printf("--GET /test/separate token 06%02x--\n", req_no);
+      COAP_BLOCKING_REQUEST(&amp;server_ipaddr, REMOTE_PORT, request, on_response);
+      printf("--Done: %u bytes--\n", received);
+      if(etimer_expired(&amp;et)) {
+        etimer_restart(&amp;et);
+      }
+    }
+  }
+
+  PROCESS_END();
+}</pre></div>
+<div class="col">
+<p>Node 2's address follows the Sky pattern in Cooja: node <i>n</i> (for <i>n</i> ≤ 9) has radio address <code>00:12:74:0n:00:0n:0n:0n</code> and IPv6 interface identifier <code>212:740n:n:n0n</code>.</p>
+<div class="predict"><span class="tag">Write down now</span>The interface identifier is the radio address with one bit flipped (<code>00:12…</code> becomes <code>02:12…</code>). Which bit is it, and why does that matter for compression in E2? You will need this in the video.</div>
+</div>
+</section>
+
+<section id="s4b">
+<h2><span class="num">4b</span>Check that it fits in a Sky mote</h2>
+<div class="col">
+<p>Build both programs once in the terminal before you open Cooja. Compile errors are much easier to read here than in Cooja's dialog.</p>
+</div>
+<div class="code"><div class="bar"><span>terminal 2</span><button type="button">Copy</button></div><pre data-lang="sh">$ cd ~/contiki/examples/cse427-w6
+$ make TARGET=sky wsn-server wsn-client
+$ msp430-size wsn-server.sky wsn-client.sky</pre></div>
+<div class="col">
+<p><code>msp430-size</code> prints four numbers per file. Check them against the Sky's limits:</p>
+</div>
+<div class="tbl"><table>
+  <thead><tr><th>Column</th><th>What it is</th><th>Limit on a Sky mote</th></tr></thead>
+  <tbody>
+    <tr><td><code>text</code> + <code>data</code></td><td>Flash: code and initial values</td><td>Must fit in 48 KB, otherwise "will not fit in region rom"</td></tr>
+    <tr><td><code>data</code> + <code>bss</code></td><td>RAM used by static variables</td><td>Out of 10 KB; what is left is the stack. Stay below about 9,000 bytes as a rule of thumb.</td></tr>
+  </tbody>
+</table></div>
+<div class="col"><p>Write both numbers on your worksheet. If either is over the limit, see the <a href="#faq">FAQ</a> section "Building for Sky motes".</p></div>
+</section>
+
+<section id="s5">
+<h2><span class="num">5</span>Build the topology in Cooja</h2>
+<div class="col">
+<ol class="steps">
+  <li><span class="menu">File → New simulation</span>. Keep the radio medium as <b>Unit Disk Graph Medium (UDGM): Distance Loss</b>. Click <span class="menu">Create</span>.</li>
+  <li><span class="menu">Motes → Add motes → Create new mote type → Sky mote</span>. Browse to <code>examples/ipv6/rpl-border-router/border-router.c</code>, click <span class="menu">Compile</span>, then <span class="menu">Create</span>, and add <b>1</b> mote. It becomes node 1.</li>
+  <li>Create a second Sky mote type from <code>cse427-w6/wsn-server.c</code> and add <b><span data-p="H">3</span></b> motes. These become nodes 2 to <span data-p="lastServer">4</span>. Node 2 is your target. The others only forward packets.</li>
+  <li>Create a third Sky mote type from <code>cse427-w6/wsn-client.c</code> and add <b>1</b> mote. It becomes node <span data-p="clientId">5</span>.</li>
+  <li>Right-click in the Network window, choose <span class="menu">Change transmission ranges</span>, and set TX range <b>50 m</b> and interference range <b>100 m</b>.</li>
+  <li>Drag the motes into one line, <b>40 m</b> apart, in node-ID order. Turn on <span class="menu">View → Radio environment (UDGM)</span> and click each mote: its green circle must contain only its direct neighbours. This forces every packet to cross <span data-p="H">3</span> hops.</li>
+  <li>Open <span class="menu">Tools → Mote output</span>, then <span class="menu">File → Save simulation</span> as <code>w6-<span data-p="surname">yilmaz</span>.csc</code>.</li>
+</ol>
+</div>
+<figure>
+  <div class="fig-scroll" id="topoWrap"></div>
+  <figcaption>Your topology. Hops are numbered from the client. The link between node 1 and node 2 only carries RPL control traffic: the client's requests stop at node 2 and never reach the border router.</figcaption>
+</figure>
+</section>
+
+<section id="s6">
+<h2><span class="num">6</span>Connect the border router</h2>
+<div class="col">
+<p>In Contiki 3.0, the border router waits for its IPv6 prefix from the host over SLIP. Until it receives one, there is no RPL network and no node gets a global address.</p>
+<ol class="steps">
+  <li>Right-click node 1 and choose <span class="menu">Mote tools for Sky 1 → Serial Socket (SERVER)</span>. Keep port 60001 and click <span class="menu">Start</span>.</li>
+  <li>Click <span class="menu">Start</span> in the Simulation control window.</li>
+  <li>In a second terminal, run the command below (password <code>user</code>):</li>
+</ol>
+</div>
+<div class="code"><div class="bar"><span>terminal 2</span><button type="button">Copy</button></div><pre data-lang="sh">$ cd ~/contiki/examples/ipv6/rpl-border-router
+$ make connect-router-cooja
+# wait for: Server IPv6 addresses: fd00::212:7401:1:101 ...
+
+# terminal 3: check that node 2 is reachable through the RPL network
+$ ping6 -c 3 fd00::212:7402:2:202</pre></div>
+<div class="col">
+<p>Within about a minute, the client's output should change from <code>No global address yet</code> to <code>--GET /<span data-p="path">sensors/yilmaz</span>…</code> followed by <code>--Done: <span data-p="L">157</span> bytes--</code>. You can also open <code>http://[fd00::212:7401:1:101]/</code> in the VM's Firefox to see the border router's neighbour and route tables.</p>
+</div>
+</section>
+
+<section id="s7">
+<h2><span class="num">7</span>Start the capture</h2>
+<div class="col">
+<ol class="steps">
+  <li>Open <span class="menu">Tools → Radio messages</span>. In that window's menu, choose <span class="menu">Analyzer → 6LoWPAN Analyzer with PCAP</span>. From now on, every frame is also written to a <code>.pcap</code> file.</li>
+  <li>Let at least 3 requests complete, then pause the simulation. Find the file:</li>
+</ol>
+</div>
+<div class="code"><div class="bar"><span>terminal 3</span><button type="button">Copy</button></div><pre data-lang="sh">$ find ~/contiki/tools/cooja -name "radiolog-*.pcap" -newer ~/contiki/examples/cse427-w6/wsn-client.c
+$ wireshark &amp;</pre></div>
+<div class="col">
+<p>A recent Wireshark on your own laptop decodes 6LoWPAN better than the VM's older version, so you may copy the <code>.pcap</code> out of the VM and analyse it there. Set up Wireshark once:</p>
+<ul>
+  <li><span class="menu">Preferences → Protocols → 6LoWPAN → Context 0</span>: <code>fd00::/64</code>. Without it, Wireshark cannot rebuild the global addresses that IPHC compressed away.</li>
+  <li>If frames show "Bad FCS" or "Malformed", change the FCS setting under <span class="menu">Protocols → IEEE 802.15.4</span>. Cooja's pcap may not carry the 2-byte checksum.</li>
+  <li>Add columns for these fields (right-click a field → <span class="menu">Apply as Column</span>): <code>wpan.seq_no</code>, <code>wpan.src64</code>, <code>wpan.dst64</code>, <code>ipv6.hlim</code>, <code>coap.mid</code>, <code>coap.token</code>.</li>
+</ul>
+</div>
+<div class="code"><div class="bar"><span>useful Wireshark display filters</span><button type="button">Copy</button></div><pre data-lang="text">coap                       all CoAP messages (shown on the last fragment of a datagram)
+6lowpan                    every 6LoWPAN frame, fragments included
+icmpv6.type == 155         RPL control messages (DIO, DIS, DAO)
+!(wpan.frame_type == 2)    hide 802.15.4 link-layer ACKs</pre></div>
+</section>
+
+<!-- ============ PART B ============ -->
+<section id="e1">
+<h2><span class="num">E1</span>One request, hop by hop</h2>
+<div class="col">
+<p>Pick one <code>GET</code> request. Filter on its Token (for example <code>coap.token == 06:03</code>). You will find one copy per hop, each sent by a different mote. Fill in one row per hop, starting with the copy the client sent.</p>
+<div class="predict"><span class="tag">Predict before you look</span>Which of these columns will be identical in every row? Which will change? In the video, say your prediction first, then show the capture.</div>
+</div>
+<div class="tbl"><table>
+  <caption>Worksheet E1</caption>
+  <thead><tr><th>Hop</th><th>802.15.4 src</th><th>802.15.4 dst</th><th>IPv6 src</th><th>IPv6 dst</th><th>Hop Limit</th><th>Uri-Path</th><th>6LoWPAN header bytes</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>2</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>…</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+<p>Answer in your own words:</p>
+<ol>
+  <li>Which identifiers belong to the <em>name</em>, which to the <em>address</em>, and which to the <em>route</em>?</li>
+  <li>The 6LoWPAN header is not the same size on every hop. Why? Hint: when can IPHC rebuild an IPv6 address from the radio frame's own addresses, and does that still hold at a relay?</li>
+  <li>IPHC can leave out the Hop Limit only when it is 1, 64 or 255. What does that cost after the first hop?</li>
+</ol>
+<p>Also fill in the identity map. It is the opening of your video.</p>
+</div>
+<div class="tbl"><table>
+  <caption>Identity map: one sensor, five identifiers</caption>
+  <thead><tr><th>Identifier</th><th>Your value</th><th>Layer</th><th>Same after an RPL parent change?</th><th>Same after replacing the sensor hardware?</th></tr></thead>
+  <tbody>
+    <tr><td>Human label</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>CoAP resource</td><td><code>/<span data-p="path">sensors/yilmaz</span></code></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>MQTT-SN topic (you design it)</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>IPv6 address</td><td><code>fd00::212:7402:2:202</code></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>802.15.4 address</td><td><code>00:12:74:02:00:02:02:02</code></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="e2">
+<h2><span class="num">E2</span>Decode the compressed header</h2>
+<div class="col">
+<p>Take the hop-1 copy of your request and one copy from a middle hop. In Wireshark, expand <b>6LoWPAN</b> and read the two IPHC bytes in hex. Decode every field by hand, then check yourself against Wireshark's decoding.</p>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 720 168" role="img" aria-label="The two-byte LOWPAN_IPHC header: dispatch bits 011, then TF, NH and HLIM in the first byte; CID, SAC, SAM, M, DAC and DAM in the second byte; inline fields follow in a fixed order.">
+    <g font-size="11" class="muted mono" text-anchor="middle">
+      <text x="45" y="22">0</text><text x="87" y="22">1</text><text x="129" y="22">2</text><text x="171" y="22">3</text><text x="213" y="22">4</text><text x="255" y="22">5</text><text x="297" y="22">6</text><text x="339" y="22">7</text>
+      <text x="381" y="22">8</text><text x="423" y="22">9</text><text x="465" y="22">10</text><text x="507" y="22">11</text><text x="549" y="22">12</text><text x="591" y="22">13</text><text x="633" y="22">14</text><text x="675" y="22">15</text>
+    </g>
+    <g stroke="currentColor" stroke-width="1">
+      <rect x="24" y="32" width="126" height="40" class="f-accent-soft"/>
+      <rect x="150" y="32" width="84" height="40" class="f-surface"/>
+      <rect x="234" y="32" width="42" height="40" class="f-surface"/>
+      <rect x="276" y="32" width="84" height="40" class="f-surface"/>
+      <rect x="360" y="32" width="42" height="40" class="f-surface"/>
+      <rect x="402" y="32" width="42" height="40" class="f-warm-soft"/>
+      <rect x="444" y="32" width="84" height="40" class="f-warm-soft"/>
+      <rect x="528" y="32" width="42" height="40" class="f-surface"/>
+      <rect x="570" y="32" width="42" height="40" class="f-warm-soft"/>
+      <rect x="612" y="32" width="84" height="40" class="f-warm-soft"/>
+    </g>
+    <line x1="360" y1="26" x2="360" y2="78" stroke="currentColor" stroke-width="3"/>
+    <g font-size="13" text-anchor="middle" font-weight="600" fill="currentColor">
+      <text x="87" y="57" class="mono">0 1 1</text>
+      <text x="192" y="57">TF</text><text x="255" y="57">NH</text><text x="318" y="57">HLIM</text>
+      <text x="381" y="57">CID</text><text x="423" y="57">SAC</text><text x="486" y="57">SAM</text>
+      <text x="549" y="57">M</text><text x="591" y="57">DAC</text><text x="654" y="57">DAM</text>
+    </g>
+    <g font-size="11.5" class="muted" text-anchor="middle">
+      <text x="87" y="92">dispatch</text>
+      <text x="192" y="92">traffic class</text><text x="192" y="106">+ flow label</text>
+      <text x="255" y="92">next hdr</text><text x="255" y="106">via NHC?</text>
+      <text x="318" y="92">00 inline</text><text x="318" y="106">01=1 10=64 11=255</text>
+      <text x="381" y="92">context</text><text x="381" y="106">id byte?</text>
+      <text x="486" y="92">source:</text><text x="486" y="106">stateless / stateful</text>
+      <text x="549" y="92">multicast</text>
+      <text x="654" y="92">destination:</text><text x="654" y="106">128 / 64 / 16 / 0 bits</text>
+    </g>
+    <text x="24" y="146" font-size="12.5" fill="currentColor">Inline fields follow in this order: [CID byte] · TF · Next Header · Hop Limit · source address bits · destination address bits · then UDP NHC</text>
+  </svg>
+  </div>
+  <figcaption>LOWPAN_IPHC (RFC 6282). The heavy line marks the byte boundary. The amber fields decide how many address bytes travel inline. Compare them between hop 1 and a middle hop.</figcaption>
+</figure>
+<div class="tbl"><table>
+  <caption>Worksheet E2</caption>
+  <thead><tr><th>Field</th><th>Hop 1 bits</th><th>Hop 1 meaning</th><th>Middle hop bits</th><th>Middle hop meaning</th></tr></thead>
+  <tbody>
+    <tr><td>IPHC bytes (hex)</td><td class="blank"></td><td>–</td><td class="blank"></td><td>–</td></tr>
+    <tr><td>TF</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>NH</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>HLIM</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>CID · SAC · SAM</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>M · DAC · DAM</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Inline bytes after IPHC</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>UDP NHC byte · ports · checksum</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td><b>Total IPv6 + UDP bytes on air</b> (vs 48)</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+<p><b>UDP NHC rule</b> (first byte <code>11110CPP</code>): a port is sent in 4 bits only if it is in <code>0xF0B0–0xF0BF</code>, and in 8 bits if it starts with <code>0xF0</code>. Otherwise it is sent in full (16 bits). Read your two ports from the capture and work out:</p>
+<ol>
+  <li>How many bytes does your UDP header take on air?</li>
+  <li>How many would it take if the application used ports 61616 and 61617?</li>
+  <li>How far is your capture from the lecture's best case of 2 + 4 = 6 bytes, and which fields cause the difference?</li>
+</ol>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 720 170" role="img" aria-label="A 127-byte IEEE 802.15.4 frame: MAC header, then the payload M available to 6LoWPAN, then a 2-byte FCS. Inside M: IPHC, UDP NHC, CoAP header and the application payload.">
+    <rect x="20" y="40" width="112" height="40" class="f-accent" />
+    <rect x="132" y="40" width="557" height="40" class="f-accent-soft" stroke="currentColor"/>
+    <rect x="689" y="40" width="11" height="40" class="f-accent" />
+    <text x="76" y="65" text-anchor="middle" font-size="12.5" font-weight="600" class="t-onaccent">MAC header</text>
+    <text x="410" y="65" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">M = bytes available to 6LoWPAN (measure it)</text>
+    <text x="694" y="30" text-anchor="middle" font-size="11" class="muted">FCS 2</text>
+    <text x="76" y="30" text-anchor="middle" font-size="11" class="muted">≈ 21 B?</text>
+    <line x1="20" y1="18" x2="700" y2="18" stroke="currentColor" />
+    <line x1="20" y1="13" x2="20" y2="23" stroke="currentColor" /><line x1="700" y1="13" x2="700" y2="23" stroke="currentColor" />
+    <text x="360" y="12" text-anchor="middle" font-size="11.5" fill="currentColor" class="mono">127 bytes maximum PHY payload</text>
+    <line x1="132" y1="80" x2="132" y2="106" stroke="currentColor" stroke-dasharray="3 3"/>
+    <line x1="689" y1="80" x2="689" y2="106" stroke="currentColor" stroke-dasharray="3 3"/>
+    <g stroke="currentColor">
+      <rect x="132" y="106" width="70" height="34" class="f-warm-soft"/>
+      <rect x="202" y="106" width="50" height="34" class="f-warm-soft"/>
+      <rect x="252" y="106" width="110" height="34" class="f-surface"/>
+      <rect x="362" y="106" width="327" height="34" class="f-surface"/>
+    </g>
+    <g font-size="12" text-anchor="middle" fill="currentColor">
+      <text x="167" y="128">IPHC + inline</text><text x="227" y="128">UDP NHC</text><text x="307" y="128">CoAP hdr + options</text><text x="525" y="128">payload (your L bytes, if it fits)</text>
+    </g>
+    <text x="20" y="162" font-size="12" class="muted">MAC header with PAN ID compression and two 8-byte addresses: 2 (frame control) + 1 (seq) + 2 (PAN) + 8 + 8. Check it against your capture.</text>
+  </svg>
+  </div>
+  <figcaption>The frame budget. Your M is 127 minus the MAC header minus the FCS. Measure the MAC header length from a unicast data frame in your capture; you need M in E3.</figcaption>
+</figure>
+</section>
+
+<section id="e3">
+<h2><span class="num">E3</span>Fragmentation (Config B)</h2>
+<div class="col">
+<p>Your <span data-p="L">157</span>-byte response does not fit in one frame. Find one response on the hop into the client (filter <code>6lowpan</code>, look for frames with a Fragmentation Header just before a CoAP 2.05).</p>
+<div class="predict"><span class="tag">Predict before you look</span>Using your measured M and the lecture formula, predict the number of fragments, with and without 8-byte alignment. Write the prediction on the worksheet before you open the frames. In the video, state it first and then reveal the capture.</div>
+</div>
+<div class="formula">
+F₁ = M − 4 &nbsp;&nbsp;(FRAG1 header: dispatch 11000, datagram_size, datagram_tag)<br>
+Fₙ = M − 5 &nbsp;&nbsp;(FRAGN header adds datagram_offset, in units of 8 bytes)<br>
+N = 1 + ⌈(L<sub>dgram</sub> − F₁) / Fₙ⌉ &nbsp;&nbsp;only when L<sub>dgram</sub> &gt; M<br>
+P(datagram complete) = p<sup>N</sup>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 760 236" role="img" aria-label="An uncompressed IPv6 datagram is split at a multiple of 8 bytes. FRAG1 carries a 4-byte header, the compressed IPv6 and UDP headers and the first part of the payload. FRAGN carries a 5-byte header with an offset equal to the split point divided by 8, then the rest.">
+    <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="20" y="20" font-size="12.5" font-weight="600" fill="currentColor">Uncompressed datagram (datagram_size and offsets count these bytes)</text>
+    <g stroke="currentColor">
+      <rect x="20" y="30" width="150" height="34" class="f-accent-soft"/>
+      <rect x="170" y="30" width="40" height="34" class="f-accent-soft"/>
+      <rect x="210" y="30" width="70" height="34" class="f-surface"/>
+      <rect x="280" y="30" width="460" height="34" class="f-surface"/>
+    </g>
+    <g font-size="12" text-anchor="middle" fill="currentColor">
+      <text x="95" y="52">IPv6 40</text><text x="190" y="52">UDP 8</text><text x="245" y="52">CoAP</text><text x="510" y="52">payload: ABCDEFGHIJ…</text>
+    </g>
+    <line x1="460" y1="22" x2="460" y2="76" class="s-warm" stroke-width="2.5" stroke-dasharray="5 3"/>
+    <text x="466" y="86" font-size="12" class="t-warm" font-weight="600">split at byte 8·k</text>
+    <line x1="230" y1="96" x2="230" y2="128" stroke="currentColor" marker-end="url(#ar1)"/>
+    <line x1="600" y1="96" x2="600" y2="128" stroke="currentColor" marker-end="url(#ar1)"/>
+    <text x="20" y="150" font-size="12.5" font-weight="600" fill="currentColor">Frame 1 · FRAG1</text>
+    <g stroke="currentColor">
+      <rect x="20" y="160" width="70" height="34" class="f-warm-soft"/>
+      <rect x="90" y="160" width="90" height="34" class="f-accent-soft"/>
+      <rect x="180" y="160" width="200" height="34" class="f-surface"/>
+    </g>
+    <g font-size="11.5" text-anchor="middle" fill="currentColor">
+      <text x="55" y="175">size · tag</text><text x="55" y="188" class="muted">4 B</text>
+      <text x="135" y="181">IPHC + NHC</text>
+      <text x="280" y="181">CoAP + first bytes</text>
+    </g>
+    <text x="400" y="150" font-size="12.5" font-weight="600" fill="currentColor">Frame 2 · FRAGN</text>
+    <g stroke="currentColor">
+      <rect x="400" y="160" width="100" height="34" class="f-warm-soft"/>
+      <rect x="500" y="160" width="240" height="34" class="f-surface"/>
+    </g>
+    <g font-size="11.5" text-anchor="middle" fill="currentColor">
+      <text x="450" y="175">size · tag · offset k</text><text x="450" y="188" class="muted">5 B</text>
+      <text x="620" y="181">remaining payload bytes</text>
+    </g>
+    <text x="20" y="222" font-size="12" class="muted">Same datagram_size and tag in every fragment of one datagram. Offset k × 8 = uncompressed bytes carried before this fragment.</text>
+  </svg>
+  </div>
+  <figcaption>How 6LoWPAN fragments one datagram. FRAG1 carries the compressed headers, but the size and offset fields count the <em>uncompressed</em> datagram. Your capture should show this.</figcaption>
+</figure>
+<div class="tbl"><table>
+  <caption>Worksheet E3</caption>
+  <thead><tr><th>Quantity</th><th>Predicted</th><th>Observed</th><th>How you got it</th></tr></thead>
+  <tbody>
+    <tr><td>M (bytes available to 6LoWPAN)</td><td>–</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>CoAP response size (header + token + options + 0xFF + L)</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Uncompressed datagram size (40 + 8 + CoAP)</td><td class="blank"></td><td class="blank"></td><td>datagram_size field</td></tr>
+    <tr><td>Compressed datagram size L<sub>dgram</sub></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>N without alignment</td><td class="blank"></td><td>–</td><td class="blank"></td></tr>
+    <tr><td>N with 8-byte alignment</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Offset field of each FRAGN</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>datagram_tag on hop 1 and on the last hop</td><td>–</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>p<sup>N</sup> for p = <span data-p="p">0.95</span></td><td class="blank"></td><td>–</td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+<ol>
+  <li>If your observed N differs from the prediction, explain exactly which byte count you got wrong.</li>
+  <li>Is the datagram_tag the same on every hop? What does that tell you about where reassembly happens in Contiki's route-over forwarding?</li>
+  <li>Using the payload letters (<code>A…Z</code> repeat every 26 bytes), point to the first payload byte of FRAGN and show that it matches the offset.</li>
+</ol>
+</div>
+</section>
+
+<section id="e4">
+<h2><span class="num">E4</span>Separate response: Message ID vs Token</h2>
+<div class="col">
+<ol class="steps">
+  <li>Set the simulation speed to 100% (Simulation control → Speed limit) so timings are real.</li>
+  <li>Right-click the client (node <span data-p="clientId">5</span>) and choose <span class="menu">Click button on Sky <span data-p="clientId">5</span></span>. The client sends <code>GET /test/separate</code>.</li>
+  <li>Wait about 5 seconds. Then right-click node 2 and choose <span class="menu">Click button on Sky 2</span>. The server now sends the real response.</li>
+  <li>Filter on the Token of that request.</li>
+</ol>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 720 300" role="img" aria-label="Separate response sequence: the client sends a confirmable GET with Message ID m1 and Token t. The server immediately sends an empty ACK with Message ID m1. After the server button is pressed, the server sends a confirmable 2.05 response with a new Message ID m2 and the same Token t. The client may acknowledge it with an ACK carrying m2; if it does not, the server retransmits.">
+    <defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      <marker id="ar2w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="f-warm"/></marker>
+    </defs>
+    <text x="130" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Client (node <tspan data-p="clientId">5</tspan>)</text>
+    <text x="590" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Server (node 2)</text>
+    <line x1="130" y1="34" x2="130" y2="286" stroke="currentColor" stroke-dasharray="2 4"/>
+    <line x1="590" y1="34" x2="590" y2="286" stroke="currentColor" stroke-dasharray="2 4"/>
+    <line x1="130" y1="64" x2="590" y2="64" stroke="currentColor" marker-end="url(#ar2)"/>
+    <text x="360" y="56" text-anchor="middle" font-size="12.5" fill="currentColor" class="mono">CON GET /test/separate · MID m₁ · Token t</text>
+    <line x1="590" y1="104" x2="130" y2="104" stroke="currentColor" marker-end="url(#ar2)"/>
+    <text x="360" y="96" text-anchor="middle" font-size="12.5" fill="currentColor" class="mono">ACK · MID m₁ · no Token, no payload</text>
+    <rect x="512" y="130" width="156" height="30" rx="4" class="f-warm-soft" stroke="currentColor"/>
+    <text x="590" y="150" text-anchor="middle" font-size="12" fill="currentColor">button pressed on node 2</text>
+    <line x1="590" y1="190" x2="130" y2="190" class="s-warm" stroke-width="2" marker-end="url(#ar2w)"/>
+    <text x="360" y="182" text-anchor="middle" font-size="12.5" class="t-warm mono" font-weight="600">CON 2.05 Content · MID m₂ · Token t</text>
+    <line x1="130" y1="230" x2="590" y2="230" stroke="currentColor" stroke-dasharray="6 4" marker-end="url(#ar2)"/>
+    <text x="360" y="222" text-anchor="middle" font-size="12.5" fill="currentColor" class="mono">ACK · MID m₂ ?</text>
+    <text x="360" y="262" text-anchor="middle" font-size="12" class="muted">If no ACK arrives, the server resends the CON response.</text>
+    <text x="360" y="278" text-anchor="middle" font-size="12" class="muted">Measure the gaps between the copies.</text>
+  </svg>
+  </div>
+  <figcaption>The pattern to find in your capture. The empty ACK stops the client from retransmitting, but it does not answer the request. The Token links the later response to the request.</figcaption>
+</figure>
+<div class="tbl"><table>
+  <caption>Worksheet E4</caption>
+  <thead><tr><th>#</th><th>Time (s)</th><th>Direction</th><th>Type</th><th>Code</th><th>Message ID</th><th>Token</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>2</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>3</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>4…</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+<ol>
+  <li>Which value stays the same between the request and the real response, and why can't the Message ID do that job?</li>
+  <li>Did the client acknowledge the 2.05? Erbium's minimal client may not. If it did not, list the retransmission times and compare the gaps with the lecture rule (start at 2–3 s, double each time, at most 4 retransmissions).</li>
+  <li>The client printed <code>--Done: 0 bytes--</code> right after the empty ACK. What does that tell you about how this client treats an empty ACK?</li>
+</ol>
+</div>
+</section>
+
+<section id="e5">
+<h2><span class="num">E5</span>Block-Wise instead of fragmentation (Config A)</h2>
+<div class="col">
+<ol class="steps">
+  <li>In <code>cse427-w6/project-conf.h</code>, change <code>REST_MAX_CHUNK_SIZE</code> from 200 to <b><span data-p="B">64</span></b>.</li>
+  <li>Clean the old build so every object file is recompiled, and stop the old tunslip6:</li>
+</ol>
+</div>
+<div class="code"><div class="bar"><span>terminal 3</span><button type="button">Copy</button></div><pre data-lang="sh">$ cd ~/contiki/examples/cse427-w6
+$ make TARGET=sky clean
+$ sudo killall tunslip6</pre></div>
+<div class="col">
+<ol class="steps" start="3">
+  <li>In Cooja, choose <span class="menu">File → Reload simulation</span>, restart the serial socket and <code>make connect-router-cooja</code>, and start a <b>new</b> pcap capture.</li>
+  <li>Check node 2's boot output: it must print <code>W6: REST_MAX_CHUNK_SIZE=<span data-p="B">64</span></code>. If it still prints 200, the firmware was not rebuilt.</li>
+  <li>Let 3 requests complete and capture them.</li>
+</ol>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 760 290" role="img" aria-label="Side-by-side comparison. Config A: the client sends a separate GET for each block and each 2.05 response with a Block2 option fits in one frame. Config B: one GET, and one large 2.05 response split by 6LoWPAN into FRAG1 and FRAGN frames.">
+    <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="190" y="20" text-anchor="middle" font-size="13.5" font-weight="700" fill="currentColor">Config A · CoAP splits (Block2)</text>
+    <text x="570" y="20" text-anchor="middle" font-size="13.5" font-weight="700" fill="currentColor">Config B · 6LoWPAN splits</text>
+    <g font-size="11.5" class="muted" text-anchor="middle"><text x="60" y="40">client</text><text x="320" y="40">server</text><text x="440" y="40">client</text><text x="700" y="40">server</text></g>
+    <g stroke="currentColor" stroke-dasharray="2 4"><line x1="60" y1="48" x2="60" y2="262"/><line x1="320" y1="48" x2="320" y2="262"/><line x1="440" y1="48" x2="440" y2="262"/><line x1="700" y1="48" x2="700" y2="262"/></g>
+    <line x1="380" y1="30" x2="380" y2="270" class="s-rule" stroke-width="1"/>
+    <g stroke="currentColor" marker-end="url(#ar3)">
+      <line x1="60" y1="70" x2="320" y2="70"/><line x1="320" y1="96" x2="60" y2="96"/>
+      <line x1="60" y1="128" x2="320" y2="128"/><line x1="320" y1="154" x2="60" y2="154"/>
+      <line x1="60" y1="210" x2="320" y2="210"/><line x1="320" y1="236" x2="60" y2="236"/>
+    </g>
+    <g font-size="11.5" fill="currentColor" text-anchor="middle" class="mono">
+      <text x="190" y="64">GET</text><text x="190" y="90">2.05 · Block2 0/M=1</text>
+      <text x="190" y="122">GET · Block2 1</text><text x="190" y="148">2.05 · Block2 1/M=1</text>
+      <text x="190" y="184">⋮</text>
+      <text x="190" y="204">GET · Block2 k</text><text x="190" y="230">2.05 · Block2 k/M=0</text>
+    </g>
+    <g stroke="currentColor" marker-end="url(#ar3)">
+      <line x1="440" y1="70" x2="700" y2="70"/>
+    </g>
+    <g class="s-warm" stroke-width="2" marker-end="url(#ar3)">
+      <line x1="700" y1="112" x2="440" y2="112"/><line x1="700" y1="140" x2="440" y2="140"/><line x1="700" y1="168" x2="440" y2="168" stroke-dasharray="5 4"/>
+    </g>
+    <g font-size="11.5" text-anchor="middle" class="mono">
+      <text x="570" y="64" fill="currentColor">GET</text>
+      <text x="570" y="106" class="t-warm">FRAG1</text><text x="570" y="134" class="t-warm">FRAGN</text><text x="570" y="162" class="t-warm">FRAGN?</text>
+    </g>
+    <path d="M714 106 q10 0 10 10 v38 q0 10 -10 10" fill="none" stroke="currentColor"/>
+    <text x="728" y="140" font-size="11" fill="currentColor" transform="rotate(90 728 140)" text-anchor="middle">one 2.05</text>
+    <text x="190" y="280" text-anchor="middle" font-size="12" class="muted">each message fits one frame</text>
+    <text x="570" y="280" text-anchor="middle" font-size="12" class="muted">lose any fragment and the whole datagram is lost</text>
+  </svg>
+  </div>
+  <figcaption>Same <span data-p="L">157</span> bytes, two places to split them. Measure which one costs more on air, and think about which one survives loss better.</figcaption>
+</figure>
+<div class="tbl"><table>
+  <caption>Worksheet E5 · count one transfer, on the hop into the client</caption>
+  <thead><tr><th>Quantity</th><th>Config B (fragments)</th><th>Config A (Block2, B = <span data-p="B">64</span>)</th></tr></thead>
+  <tbody>
+    <tr><td>CoAP request/response exchanges</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Data frames on air (no link ACKs)</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Total bytes of those frames</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Any 6LoWPAN fragmentation header?</td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>Block2 values seen (NUM / M / SZX)</td><td>–</td><td class="blank"></td></tr>
+    <tr><td>What is resent if one frame is lost?</td><td class="blank"></td><td class="blank"></td></tr>
+  </tbody>
+</table></div>
+<div class="col"><p>Tip: apply a filter for one link, for example <code>wpan.dst64 == 00:12:74:0<span data-p="clientId">5</span>:00:0<span data-p="clientId">5</span>:0<span data-p="clientId">5</span>:0<span data-p="clientId">5</span></code>, then read the displayed packet and byte counts in <span class="menu">Statistics → Capture File Properties</span> (called Summary in older Wireshark versions).</p></div>
+</section>
+
+<section id="bonus">
+<h2><span class="num">+5</span>Bonus: add loss</h2>
+<div class="col">
+<p>Go back to Config B. In <span class="menu">Change transmission ranges</span>, set <b>Success ratio RX</b> to <span data-p="p">0.95</span>. Run until about 20 requests have completed, then answer:</p>
+<ol>
+  <li>Find a CoAP retransmission (the same Message ID sent twice). How long after the original was it sent?</li>
+  <li>You will find no 802.15.4 retransmissions. Which line of your <code>project-conf.h</code> explains that?</li>
+  <li>p<sup>N</sup> predicts the chance that all fragments of one datagram get through on one hop. Count how many of your requests completed. Is the success rate higher or lower than p<sup>N</sup> over <span data-p="H">3</span> hops predicts, and which mechanism explains the difference?</li>
+</ol>
+</div>
+</section>
+
+<!-- ============ PART C ============ -->
+<section id="design">
+<h2><span class="num">C</span>Your scenario card: CoAP or MQTT-SN?</h2>
+<div class="col">
+<p>Contiki 3.0 has no MQTT-SN implementation, so this part is an engineering argument, not a lab. Use the numbers from your own capture where they help, for example your measured M and header sizes.</p>
+</div>
+<div class="cards" id="cards">
+  <div class="card" data-card="1"><span class="cn">Card 1</span><h4>Sleeping valves</h4><p>40 irrigation valve controllers sleep 10 minutes, wake for 2 seconds, then sleep again. A farm server sends open/close commands and must know each command arrived.</p></div>
+  <div class="card" data-card="2"><span class="cn">Card 2</span><h4>Motor 7 vibration</h4><p>One mains-powered vibration sensor reports an RMS value every second. Three dashboards and one alarm service all need every value.</p></div>
+  <div class="card" data-card="3"><span class="cn">Card 3</span><h4>Diagnostic log</h4><p>Once in a while an engineer downloads a 2,000-byte diagnostic log from one battery sensor over a lossy 4-hop path.</p></div>
+  <div class="card" data-card="4"><span class="cn">Card 4</span><h4>Room 301 temperature</h4><p>Building management asks for "the temperature in room 301". The sensor hardware is replaced every year, and its address changes each time.</p></div>
+</div>
+<div class="col">
+<p>For your card, answer:</p>
+<ol>
+  <li>CoAP, MQTT-SN, or both? Name the deciding property: traffic pattern, sleeping behaviour, addressing, payload size or reliability.</li>
+  <li>Write the exact CoAP URI <em>and</em> the exact MQTT-SN topic string you would use. How many bytes does a 2-byte Topic ID save per message here, and is that Topic ID valid at a different gateway?</li>
+  <li>Which reliability mechanism (CON/NON, or QoS 0/1/2), and how many radio messages does one delivery cost?</li>
+  <li>What happens to a message sent while the device sleeps, and who keeps it?</li>
+  <li>Which identifier in your answer survives a hardware replacement, and which does not?</li>
+</ol>
+</div>
+</section>
+
+<!-- ============ PART D ============ -->
+<section id="video">
+<h2><span class="num">D</span>The 10-minute video</h2>
+<div class="col">
+<p>Your video proves that <em>you</em> ran the simulation and understand what it shows. Use this structure. Each part maps to one rubric line.</p>
+</div>
+<figure>
+  <div class="fig-scroll">
+  <svg viewBox="0 0 760 104" role="img" aria-label="Video timeline from 0 to 10 minutes: identity map 0 to 1, hop by hop 1 to 3, IPHC decode 3 to 4.5, fragmentation 4.5 to 6.5, Block-Wise comparison 6.5 to 7.5, separate response 7.5 to 8.5, scenario card 8.5 to 10.">
+    <g stroke="currentColor" stroke-width="1">
+      <rect x="20" y="20" width="72" height="40" class="f-accent-soft"/>
+      <rect x="92" y="20" width="144" height="40" class="f-surface"/>
+      <rect x="236" y="20" width="108" height="40" class="f-accent-soft"/>
+      <rect x="344" y="20" width="144" height="40" class="f-warm-soft"/>
+      <rect x="488" y="20" width="72" height="40" class="f-accent-soft"/>
+      <rect x="560" y="20" width="72" height="40" class="f-surface"/>
+      <rect x="632" y="20" width="108" height="40" class="f-accent-soft"/>
+    </g>
+    <g font-size="11.5" text-anchor="middle" fill="currentColor" font-weight="600">
+      <text x="56" y="44">Identity</text><text x="164" y="44">E1 Hop by hop</text><text x="290" y="44">E2 IPHC</text><text x="416" y="44">E3 Fragments</text><text x="524" y="44">E5 Blocks</text><text x="596" y="44">E4 Sep.</text><text x="686" y="44">Card</text>
+    </g>
+    <g font-size="11" text-anchor="middle" class="muted mono">
+      <text x="20" y="80">0</text><text x="92" y="80">1</text><text x="164" y="80">2</text><text x="236" y="80">3</text><text x="308" y="80">4</text><text x="380" y="80">5</text><text x="452" y="80">6</text><text x="524" y="80">7</text><text x="596" y="80">8</text><text x="668" y="80">9</text><text x="740" y="80">10</text>
+    </g>
+    <text x="380" y="98" text-anchor="middle" font-size="11" class="muted">minutes</text>
+  </svg>
+  </div>
+  <figcaption>Suggested timing. You may shift time between parts, but grading stops at 10:00.</figcaption>
+</figure>
+<div class="tbl"><table>
+  <thead><tr><th>Time</th><th>Part</th><th>What must be on screen and what you must say</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0:00–1:00</td><td>Identity map</td><td>Your Cooja network with your node count. The five identifiers of your sensor, and which ones change on a parent change or a hardware swap.</td></tr>
+    <tr><td class="num">1:00–3:00</td><td>E1 Hop by hop</td><td>Your prediction first. Then the same request on two or more hops: what changed, what stayed, and why the 6LoWPAN header size differs.</td></tr>
+    <tr><td class="num">3:00–4:30</td><td>E2 IPHC</td><td>The two IPHC bytes in hex, decoded field by field, and the inline bytes. Your total IPv6 + UDP size compared with 48.</td></tr>
+    <tr><td class="num">4:30–6:30</td><td>E3 Fragments</td><td>Your measured M. <b>Your predicted N, stated before</b> the capture is shown. Then the FRAG1/FRAGN headers, size, tag and offset, and p<sup>N</sup>.</td></tr>
+    <tr><td class="num">6:30–7:30</td><td>E5 Blocks</td><td>The boot line proving the chunk size changed. Block2 exchanges vs fragments: frames, bytes, and what gets resent after a loss.</td></tr>
+    <tr><td class="num">7:30–8:30</td><td>E4 Separate</td><td>CON, empty ACK, and CON response in Wireshark. Which value matches, Message ID or Token, and why. Retransmission timing if you saw it.</td></tr>
+    <tr><td class="num">8:30–10:00</td><td>Scenario card</td><td>Your decision for your card, with the URI, topic string, Topic ID saving and reliability choice.</td></tr>
+  </tbody>
+</table></div>
+<div class="col">
+<h3>Rules</h3>
+<ul>
+  <li><b>Maximum 10:00.</b> Anything after 10:00 is not graded.</li>
+  <li>Your own voice explains everything. A webcam is optional. Text-to-speech or a voice-over by someone else gets 0.</li>
+  <li>The screen must show <em>your</em> simulation: your resource path <code>/<span data-p="path">sensors/yilmaz</span></code>, your node count and your capture. Frames from another student's capture get 0 for that part.</li>
+  <li>Speak to the viewer. Notes are fine, but reading a script word for word loses clarity marks.</li>
+  <li>You may edit the video or record it in one take. 720p or better, with readable Wireshark text (zoom in).</li>
+</ul>
+</div>
+</section>
+
+<section id="submit">
+<h2><span class="num">↥</span>Submission</h2>
+<div class="col">
+<div class="tbl"><table>
+  <thead><tr><th>File</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td><code>CSE427_W6_<span data-p="stno">2022123457</span>.mp4</code></td><td>The video, 10:00 maximum</td></tr>
+    <tr><td><code>CSE427_W6_<span data-p="stno">2022123457</span>_B.pcap</code></td><td>The Config B capture used in the video (E1–E4)</td></tr>
+    <tr><td><code>CSE427_W6_<span data-p="stno">2022123457</span>_A.pcap</code></td><td>The Config A capture used in the video (E5)</td></tr>
+    <tr><td><code>CSE427_W6_<span data-p="stno">2022123457</span>_worksheet.pdf</code></td><td>Your parameters, the identity map, and worksheets E1–E5, filled in</td></tr>
+  </tbody>
+</table></div>
+<p>The worksheet template is below as Markdown. Copy it, fill it in any editor, and export it as PDF.</p>
+<p><button type="button" class="copy-btn" id="copyWs">Copy worksheet template</button><span class="status" id="wsStatus" role="status"></span></p>
+<p>Deadline: see the course page.</p>
+</div>
+</section>
+
+<section id="rubric">
+<h2><span class="num">✓</span>Rubric</h2>
+<div class="tbl"><table>
+  <thead><tr><th>Part</th><th class="num">Points</th><th>Full marks when</th></tr></thead>
+  <tbody>
+    <tr><td>Identity map</td><td class="num">10</td><td>All five identifiers correct for your sensor; correct answers on which survive a parent change and a hardware swap.</td></tr>
+    <tr><td>E1 Hop by hop</td><td class="num">15</td><td>Prediction stated first; changed vs unchanged fields shown on real frames; header-size difference explained by link-layer address derivation.</td></tr>
+    <tr><td>E2 IPHC decode</td><td class="num">15</td><td>Both bytes decoded correctly by hand; inline bytes accounted for; UDP NHC size explained with the port rule.</td></tr>
+    <tr><td>E3 Fragmentation</td><td class="num">20</td><td>M measured; N predicted before reveal and matching the capture, or the difference explained; size, tag and offset read correctly; p<sup>N</sup> computed.</td></tr>
+    <tr><td>E5 Block-Wise vs fragments</td><td class="num">10</td><td>Config change proven by the boot line; frame and byte counts for both configs; correct argument about loss.</td></tr>
+    <tr><td>E4 Separate response</td><td class="num">10</td><td>MID and Token traced through all messages; correct explanation of why the Token links them.</td></tr>
+    <tr><td>Scenario card</td><td class="num">10</td><td>Justified choice using the deciding property; exact URI and topic; Topic ID scope; reliability cost in messages.</td></tr>
+    <tr><td>Clarity and timing</td><td class="num">10</td><td>Within 10:00, readable screen, explains rather than reads.</td></tr>
+    <tr><th>Total</th><th class="num">100</th><th>Bonus (loss experiment): up to +5</th></tr>
+  </tbody>
+</table></div>
+</section>
+
+<footer>CSE 427 Wireless Sensor Networks · Week 6: Naming, Addressing and 6LoWPAN · Built for Instant Contiki 3.0 and Cooja. Stuck? Start with the <a href="#faq">FAQ</a>.</footer>
+
+<pre id="wsTemplate" hidden>
+# CSE 427 · Week 6 worksheet
+
+Student number: ____  Surname: ____
+Parameters: L = __  H = __  B = __  Card = __  p = __
+Resource: /sensors/____
+msp430-size  wsn-server: text __ data __ bss __   wsn-client: text __ data __ bss __
+
+## Identity map
+| Identifier | Your value | Layer | Same after parent change? | Same after hardware swap? |
+|---|---|---|---|---|
+| Human label | | | | |
+| CoAP resource | | | | |
+| MQTT-SN topic | | | | |
+| IPv6 address | | | | |
+| 802.15.4 address | | | | |
+
+## E1 · Hop by hop (Token: __)
+| Hop | 802.15.4 src | 802.15.4 dst | IPv6 src | IPv6 dst | Hop Limit | Uri-Path | 6LoWPAN hdr bytes |
+|---|---|---|---|---|---|---|---|
+| 1 | | | | | | | |
+| 2 | | | | | | | |
+| 3 | | | | | | | |
+Prediction (before capture):
+Answers:
+
+## E2 · IPHC decode
+| Field | Hop 1 bits | Hop 1 meaning | Middle hop bits | Middle hop meaning |
+|---|---|---|---|---|
+| IPHC bytes (hex) | | | | |
+| TF | | | | |
+| NH | | | | |
+| HLIM | | | | |
+| CID SAC SAM | | | | |
+| M DAC DAM | | | | |
+| Inline bytes | | | | |
+| UDP NHC | | | | |
+| Total IPv6+UDP on air | | | | |
+Measured MAC header: __ bytes  →  M = __
+
+## E3 · Fragmentation
+| Quantity | Predicted | Observed | How |
+|---|---|---|---|
+| CoAP response size | | | |
+| Uncompressed datagram size | | | |
+| Compressed datagram size | | | |
+| N (no alignment) | | | |
+| N (8-byte alignment) | | | |
+| FRAGN offsets | | | |
+| Tag hop 1 / last hop | | | |
+| p^N | | | |
+Answers:
+
+## E4 · Separate response
+| # | Time | Direction | Type | Code | MID | Token |
+|---|---|---|---|---|---|---|
+| 1 | | | | | | |
+| 2 | | | | | | |
+| 3 | | | | | | |
+Answers:
+
+## E5 · Block-Wise vs fragments
+| Quantity | Config B | Config A |
+|---|---|---|
+| CoAP exchanges | | |
+| Data frames on air | | |
+| Total bytes | | |
+| Fragmentation header? | | |
+| Block2 values | | |
+| Resent after one loss | | |
+
+## Scenario card __
+1.
+2.
+3.
+4.
+5.
+</pre>
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- syntax highlighting (text nodes only, so parameter spans survive) ---------- */
+  var C_RE = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)')|(^[ \t]*#\s*[a-z]+)|\b(static|void|int|const|char|uint8_t|uint16_t|int32_t|if|else|while|return|for|struct)\b/gm;
+  var SH_RE = /(#[^\n]*)|(^\$ )/gm;
+  function highlight(pre) {
+    var lang = pre.getAttribute("data-lang");
+    if (lang !== "c" && lang !== "sh") return;
+    var re = lang === "c" ? C_RE : SH_RE;
+    var walker = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) { if (!n.parentNode.closest(".pv")) nodes.push(n); }
+    nodes.forEach(function (node) {
+      var text = node.nodeValue, last = 0, m, frag = document.createDocumentFragment();
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        var cls = lang === "c" ? (m[1] ? "tc" : m[2] ? "ts" : m[3] ? "tp" : "tk") : (m[1] ? "tc" : "tprompt");
+        var s = document.createElement("span"); s.className = cls; s.textContent = m[0];
+        frag.appendChild(s);
+        last = m.index + m[0].length;
+      }
+      if (last === 0) return;
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+  document.querySelectorAll("pre[data-lang]").forEach(highlight);
+
+  /* ---------- copy buttons ---------- */
+  function copyText(text, btn, label) {
+    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = label; }, 1600); }
+    try {
+      navigator.clipboard.writeText(text).then(function () { done("Copied"); }, function () { done("Select and press Ctrl+C"); });
+    } catch (e) { done("Select and press Ctrl+C"); }
+  }
+  document.querySelectorAll(".code .bar button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.closest(".code").querySelector("pre");
+      var text = pre.textContent.replace(/^\$ /gm, "");
+      copyText(text, btn, "Copy");
+    });
+  });
+  document.getElementById("copyWs").addEventListener("click", function () {
+    var btn = this;
+    var t = document.getElementById("wsTemplate").textContent.trim();
+    var p = current;
+    t = t.replace("Student number: ____", "Student number: " + p.stno)
+         .replace("Surname: ____", "Surname: " + p.surname)
+         .replace("L = __  H = __  B = __  Card = __  p = __", "L = " + p.L + "  H = " + p.H + "  B = " + p.B + "  Card = " + p.card + "  p = " + p.p)
+         .replace("Resource: /sensors/____", "Resource: /" + p.path)
+         .replace("## Scenario card __", "## Scenario card " + p.card);
+    copyText(t, btn, "Copy worksheet template");
+  });
+
+  /* ---------- parameters ---------- */
+  var TR = { "ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u", "â": "a", "î": "i", "û": "u",
+             "Ç": "c", "Ğ": "g", "İ": "i", "Ö": "o", "Ş": "s", "Ü": "u", "Â": "a", "Î": "i", "Û": "u" };
+  function slug(s) {
+    var out = Array.from(s).map(function (c) { return TR[c] !== undefined ? TR[c] : c; }).join("").toLowerCase().replace(/[^a-z]/g, "");
+    return (out || "surname").slice(0, 12);
+  }
+  function compute(stnoRaw, surnameRaw) {
+    var digits = (stnoRaw || "").replace(/\D/g, "");
+    if (digits.length < 2) digits = ("00" + digits).slice(-2);
+    var d2 = parseInt(digits.slice(-2), 10), d1 = d2 % 10, tens = Math.floor(d2 / 10);
+    var H = 2 + (d1 % 3);
+    var s = slug(surnameRaw || "");
+    return {
+      stno: digits, surname: s, path: "sensors/" + s,
+      L: 100 + d2, H: H, motes: H + 2, clientId: H + 2, lastServer: H + 1,
+      B: d1 % 2 === 0 ? 32 : 64, card: (d1 % 4) + 1,
+      p: [0.85, 0.90, 0.95][tens % 3].toFixed(2)
+    };
+  }
+
+  function addr(n) { return "fd00::212:740" + n + ":" + n + ":" + n + "0" + n; }
+
+  function topology(p) {
+    var H = p.H, count = H + 2, step = 120, x0 = 210;
+    var W = x0 + (count - 1) * step + 90, cy = 150;
+    var cx = function (id) { return x0 + (id - 1) * step; };
+    var s = '<svg viewBox="0 20 ' + W + ' 215" role="img" aria-label="Chain topology: host running tunslip6, border router node 1, target server node 2, ' + (H - 1) + ' relay nodes, client node ' + p.clientId + '. The client reaches node 2 in ' + H + ' hops.">';
+    s += '<defs><marker id="arT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f-warm"/></marker></defs>';
+    // host
+    s += '<rect x="16" y="' + (cy - 26) + '" width="120" height="52" rx="6" class="f-bg" stroke="currentColor"/>';
+    s += '<text x="76" y="' + (cy - 4) + '" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Host VM</text>';
+    s += '<text x="76" y="' + (cy + 13) + '" text-anchor="middle" font-size="11" class="muted mono">tunslip6</text>';
+    s += '<line x1="136" y1="' + cy + '" x2="' + (cx(1) - 24) + '" y2="' + cy + '" stroke="currentColor" stroke-dasharray="5 4"/>';
+    s += '<text x="76" y="' + (cy + 44) + '" text-anchor="middle" font-size="10.5" class="muted">SLIP over TCP :60001</text>';
+    // links
+    for (var i = 1; i < count; i++) {
+      var a = cx(i) + 22, b = cx(i + 1) - 22;
+      s += '<line x1="' + a + '" y1="' + cy + '" x2="' + b + '" y2="' + cy + '" stroke="currentColor"/>';
+      s += '<text x="' + ((a + b) / 2) + '" y="' + (cy - 7) + '" text-anchor="middle" font-size="10.5" class="muted">40 m</text>';
+      var hopLabel = i === 1 ? "RPL only" : "hop " + (count - i);
+      s += '<text x="' + ((a + b) / 2) + '" y="' + (cy + 17) + '" text-anchor="middle" font-size="11" font-weight="600" ' + (i === 1 ? 'class="muted"' : 'class="t-accent"') + '>' + hopLabel + '</text>';
+    }
+    // request arc
+    var xc = cx(count), x2 = cx(2);
+    s += '<path d="M ' + xc + ' ' + (cy - 26) + ' C ' + xc + ' 40, ' + x2 + ' 40, ' + x2 + ' ' + (cy - 26) + '" fill="none" class="s-warm" stroke-width="2" marker-start="url(#arT)" marker-end="url(#arT)"/>';
+    s += '<text x="' + ((xc + x2) / 2) + '" y="56" text-anchor="middle" font-size="12" class="t-warm mono" font-weight="600">CON GET /' + p.path + '  ⇄  2.05 · ' + p.L + ' B</text>';
+    // nodes
+    for (var id = 1; id <= count; id++) {
+      var role = id === 1 ? "border router" : id === 2 ? "target server" : id === count ? "wsn-client" : "relay";
+      var cls = id === 2 ? "f-accent" : id === count ? "f-warm" : "f-surface";
+      var tcls = (id === 2 || id === count) ? "t-onaccent" : "";
+      s += '<circle cx="' + cx(id) + '" cy="' + cy + '" r="22" class="' + cls + '" stroke="currentColor" stroke-width="1.5"/>';
+      s += '<text x="' + cx(id) + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="14" font-weight="700" class="mono ' + tcls + '"' + (tcls ? '' : ' fill="currentColor"') + '>' + id + '</text>';
+      s += '<text x="' + cx(id) + '" y="' + (cy + 44) + '" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">' + role + '</text>';
+      s += '<text x="' + cx(id) + '" y="' + (cy + 60) + '" text-anchor="middle" font-size="10" class="muted mono">fd00::212:</text>';
+      s += '<text x="' + cx(id) + '" y="' + (cy + 73) + '" text-anchor="middle" font-size="10" class="muted mono">' + addr(id).replace("fd00::212:", "") + '</text>';
+    }
+    s += '<text x="16" y="' + (cy + 74) + '" font-size="11" class="muted">TX 50 m · INT 100 m</text>';
+    s += '</svg>';
+    return s;
+  }
+
+  var current;
+  function render() {
+    var stno = document.getElementById("stno").value, sur = document.getElementById("surname").value;
+    current = compute(stno, sur);
+    document.querySelectorAll("[data-p]").forEach(function (el) {
+      var k = el.getAttribute("data-p");
+      if (current[k] !== undefined) el.textContent = current[k];
+    });
+    document.querySelectorAll(".card").forEach(function (c) {
+      c.classList.toggle("mine", +c.getAttribute("data-card") === current.card);
+    });
+    document.getElementById("topoWrap").innerHTML = topology(current);
+    var isExample = stno.replace(/\D/g, "") === "2022123457" && sur === "Yılmaz";
+    document.getElementById("exflag").hidden = !isExample;
+    try { localStorage.setItem("w6params", JSON.stringify({ stno: stno, sur: sur })); } catch (e) {}
+  }
+
+  try {
+    var saved = JSON.parse(localStorage.getItem("w6params") || "null");
+    if (saved && saved.stno) { document.getElementById("stno").value = saved.stno; document.getElementById("surname").value = saved.sur || ""; }
+  } catch (e) {}
+  document.getElementById("faqOpen").addEventListener("click", function () { document.querySelectorAll("#faq details").forEach(function (d) { d.open = true; }); });
+  document.getElementById("faqClose").addEventListener("click", function () { document.querySelectorAll("#faq details").forEach(function (d) { d.open = false; }); });
+  document.getElementById("pform").addEventListener("input", render);
+  document.getElementById("pform").addEventListener("submit", function (e) { e.preventDefault(); });
+  render();
+})();
+</script>
+</body>
+</html>
